@@ -76,15 +76,15 @@ const ChatSidebar = ({
         </button>
       </div>
 
-      {/* Revolutionary Header Design */}
-      <div className="relative z-10 p-6 pt-8">
+      {/* Compact Header Design */}
+      <div className="relative z-10 p-4 pt-6">
         {/* Floating mode toggle */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <div className="bg-white/90 backdrop-blur-lg rounded-full p-1.5 shadow-xl border border-white/50">
             <div className="flex relative">
               <button
                 onClick={() => setShowAllUsers(false)}
-                className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
                   !showAllUsers
                     ? "text-white shadow-lg"
                     : "text-gray-600 hover:text-gray-800"
@@ -98,7 +98,7 @@ const ChatSidebar = ({
               </button>
               <button
                 onClick={() => setShowAllUsers(true)}
-                className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
                   showAllUsers
                     ? "text-white shadow-lg"
                     : "text-gray-600 hover:text-gray-800"
@@ -114,38 +114,32 @@ const ChatSidebar = ({
           </div>
         </div>
 
-        {/* User Profile Card - Completely New Design */}
+        {/* Compact User Profile Card */}
         {loggedInUser && (
-          <div className="relative mb-6">
-            <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-5 shadow-xl border border-white/50 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-20 h-20 opacity-20 transform rotate-12">
+          <div className="relative mb-4">
+            <div className="bg-white/80 backdrop-blur-lg rounded-xl p-3 shadow-lg border border-white/50 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-12 h-12 opacity-20 transform rotate-12">
                 <Sparkles className="w-full h-full" style={{color: '#A78BFA'}} />
               </div>
               
               <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-3">
+                <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg relative overflow-hidden" 
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md relative overflow-hidden" 
                          style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}>
-                      <span className="text-white font-bold text-xl">
+                      <span className="text-white font-bold text-lg">
                         {loggedInUser.name.charAt(0).toUpperCase()}
                       </span>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                     </div>
                   </div>
                   
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg" style={{color: '#374151'}}>{loggedInUser.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                      <span className="text-sm text-gray-600">Active now</span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-base truncate" style={{color: '#374151'}}>{loggedInUser.name}</h3>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-400"></div>
+                      <span className="text-xs text-gray-600">Active</span>
                     </div>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
-                  <Globe className="w-3 h-3" />
-                  <span>Connected worldwide</span>
                 </div>
               </div>
             </div>
@@ -153,35 +147,71 @@ const ChatSidebar = ({
         )}
       </div>
 
-      {/* Content Area - Revolutionary Design */}
+      {/* Custom Scrollbar Styles */}
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 10px;
+          margin: 8px 0;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, #A78BFA, #F472B6);
+          border-radius: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 2px 4px rgba(167, 139, 250, 0.3);
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(135deg, #8B5CF6, #EC4899);
+          box-shadow: 0 4px 8px rgba(167, 139, 250, 0.4);
+          transform: scale(1.1);
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:active {
+          background: linear-gradient(135deg, #7C3AED, #DB2777);
+        }
+        
+        /* Firefox scrollbar */
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #A78BFA rgba(255, 255, 255, 0.3);
+        }
+      `}</style>
+
+      {/* Content Area - Expanded */}
       <div className="flex-1 overflow-hidden px-4 relative z-10">
         {showAllUsers ? (
-          <div className="h-full space-y-4">
+          <div className="h-full space-y-3">
             {/* Futuristic Search */}
             <div className="relative">
-              <div className="absolute inset-0 rounded-2xl" style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)', padding: '1px'}}>
-                <div className="w-full h-full bg-white rounded-2xl"></div>
+              <div className="absolute inset-0 rounded-xl" style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)', padding: '1px'}}>
+                <div className="w-full h-full bg-white rounded-xl"></div>
               </div>
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{color: '#A78BFA'}} />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{color: '#A78BFA'}} />
                 <input
                   type="text"
                   placeholder="Discover amazing people..."
-                  className="w-full pl-12 pr-4 py-4 bg-transparent rounded-2xl font-medium placeholder-gray-500 focus:outline-none"
+                  className="w-full pl-10 pr-10 py-3 bg-transparent rounded-xl font-medium placeholder-gray-500 focus:outline-none text-sm"
                   style={{color: '#374151'}}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{backgroundColor: '#F472B6'}}>
-                    <Sparkles className="w-3 h-3 text-white" />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{backgroundColor: '#F472B6'}}>
+                    <Sparkles className="w-2.5 h-2.5 text-white" />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Users Grid - New Layout */}
-            <div className="overflow-y-auto h-full pb-4 space-y-3">
+            {/* Users Grid - Optimized Layout */}
+            <div className="overflow-y-auto overflow-x-hidden h-full pb-4 space-y-2 custom-scrollbar">
               {users
                 ?.filter(
                   (u) =>
@@ -194,33 +224,33 @@ const ChatSidebar = ({
                     className="w-full text-left group relative overflow-hidden"
                     onClick={() => createChat(u)}
                   >
-                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white/50 hover:bg-white/80 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
-                      <div className="flex items-center gap-4">
+                    <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 border border-white/50 hover:bg-white/80 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
+                      <div className="flex items-center gap-3">
                         <div className="relative">
-                          <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-md relative overflow-hidden"
+                          <div className="w-11 h-11 rounded-lg flex items-center justify-center shadow-md relative overflow-hidden"
                                style={{background: `linear-gradient(${135 + index * 30}deg, #A78BFA, #F472B6)`}}>
-                            <span className="text-white font-semibold text-lg">
+                            <span className="text-white font-semibold">
                               {u.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           {onlineUsers.includes(u._id) && (
-                            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green-400 border-2 border-white shadow-lg animate-pulse"></div>
+                            <div className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-400 border-2 border-white shadow-sm"></div>
                           )}
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-lg truncate" style={{color: '#374151'}}>{u.name}</h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className={`w-2 h-2 rounded-full ${onlineUsers.includes(u._id) ? 'bg-green-400' : 'bg-gray-300'}`}></div>
-                            <span className="text-sm text-gray-600">
+                          <h4 className="font-semibold truncate text-sm" style={{color: '#374151'}}>{u.name}</h4>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <div className={`w-1.5 h-1.5 rounded-full ${onlineUsers.includes(u._id) ? 'bg-green-400' : 'bg-gray-300'}`}></div>
+                            <span className="text-xs text-gray-600">
                               {onlineUsers.includes(u._id) ? "Available" : "Away"}
                             </span>
                           </div>
                         </div>
 
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{backgroundColor: '#F472B6'}}>
-                            <Plus className="w-4 h-4 text-white" />
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{backgroundColor: '#F472B6'}}>
+                            <Plus className="w-3.5 h-3.5 text-white" />
                           </div>
                         </div>
                       </div>
@@ -230,7 +260,7 @@ const ChatSidebar = ({
             </div>
           </div>
         ) : chats && chats.length > 0 ? (
-          <div className="h-full overflow-y-auto pb-4 space-y-2">
+          <div className="h-full overflow-y-auto overflow-x-hidden pb-4 space-y-2 custom-scrollbar">
             {chats.map((chat, index) => {
               const latestMessage = chat.chat.latestMessage;
               const isSelected = selectedUser === chat.chat._id;
@@ -245,51 +275,46 @@ const ChatSidebar = ({
                     setSidebarOpen(false);
                   }}
                   className={`w-full text-left group relative overflow-hidden transition-all duration-300 ${
-                    isSelected ? 'scale-[1.02]' : 'hover:scale-[1.01]'
+                    isSelected ? 'scale-[1.01]' : 'hover:scale-[1.005]'
                   }`}
                 >
-                  <div className={`rounded-2xl p-4 border transition-all duration-300 relative ${
+                  <div className={`rounded-xl p-3 border transition-all duration-300 relative ${
                     isSelected
-                      ? "bg-white shadow-xl border-2"
-                      : "bg-white/60 backdrop-blur-sm border-white/50 hover:bg-white/80 hover:shadow-lg"
+                      ? "bg-white shadow-lg border-2"
+                      : "bg-white/60 backdrop-blur-sm border-white/50 hover:bg-white/80 hover:shadow-md"
                   }`}
                   style={{
                     borderColor: isSelected ? '#A78BFA' : undefined,
                     background: isSelected ? 'linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(244, 114, 182, 0.1))' : undefined
                   }}>
                     {isSelected && (
-                      <div className="absolute inset-0 rounded-2xl opacity-20" 
+                      <div className="absolute inset-0 rounded-xl opacity-20" 
                            style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}></div>
                     )}
                     
-                    <div className="relative z-10 flex items-center gap-4">
+                    <div className="relative z-10 flex items-center gap-3">
                       <div className="relative">
-                        <div className={`w-14 h-14 rounded-xl flex items-center justify-center shadow-md relative overflow-hidden ${
-                          isSelected ? 'ring-2 ring-purple-300' : ''
+                        <div className={`w-11 h-11 rounded-lg flex items-center justify-center shadow-md relative overflow-hidden ${
+                          isSelected ? 'ring-2 ring-purple-200' : ''
                         }`}
                              style={{background: `linear-gradient(${135 + index * 25}deg, #A78BFA, #F472B6)`}}>
-                          <span className="text-white font-semibold text-lg">
+                          <span className="text-white font-semibold">
                             {chat.user.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         {onlineUsers.includes(chat.user._id) && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green-400 border-2 border-white shadow-lg">
-                            <div className="w-full h-full rounded-full bg-green-400 animate-ping opacity-75"></div>
+                          <div className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-400 border-2 border-white shadow-sm">
                           </div>
                         )}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-bold text-lg truncate" style={{color: '#374151'}}>{chat.user.name}</h4>
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="font-semibold truncate text-sm" style={{color: '#374151'}}>{chat.user.name}</h4>
                           {unseenCount > 0 && (
-                            <div className="relative">
-                              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg"
-                                   style={{background: 'linear-gradient(135deg, #F472B6, #A78BFA)'}}>
-                                {unseenCount > 99 ? "99+" : unseenCount}
-                              </div>
-                              <div className="absolute inset-0 rounded-full animate-ping opacity-30"
-                                   style={{backgroundColor: '#F472B6'}}></div>
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md"
+                                 style={{background: 'linear-gradient(135deg, #F472B6, #A78BFA)'}}>
+                              {unseenCount > 9 ? "9+" : unseenCount}
                             </div>
                           )}
                         </div>
@@ -297,15 +322,15 @@ const ChatSidebar = ({
                         {latestMessage && (
                           <div className="flex items-center gap-2">
                             {isSentByMe ? (
-                              <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{backgroundColor: '#A78BFA'}}>
-                                <CornerUpLeft size={12} className="text-white" />
+                              <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{backgroundColor: '#A78BFA'}}>
+                                <CornerUpLeft size={10} className="text-white" />
                               </div>
                             ) : (
-                              <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{backgroundColor: '#F472B6'}}>
-                                <CornerDownRight size={12} className="text-white" />
+                              <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{backgroundColor: '#F472B6'}}>
+                                <CornerDownRight size={10} className="text-white" />
                               </div>
                             )}
-                            <span className="text-sm text-gray-600 truncate flex-1 font-medium">
+                            <span className="text-xs text-gray-600 truncate flex-1 font-medium">
                               {latestMessage.text || "📷 Photo"}
                             </span>
                           </div>
@@ -319,62 +344,62 @@ const ChatSidebar = ({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center relative">
-            <div className="relative mb-8">
-              <div className="w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl relative overflow-hidden"
+            <div className="relative mb-6">
+              <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-xl relative overflow-hidden"
                    style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}>
-                <MessageCircle className="w-12 h-12 text-white" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                <MessageCircle className="w-10 h-10 text-white" />
               </div>
-              <div className="absolute -top-2 -right-2">
-                <Heart className="w-8 h-8" style={{color: '#F472B6'}} />
+              <div className="absolute -top-1 -right-1">
+                <Heart className="w-6 h-6" style={{color: '#F472B6'}} />
               </div>
             </div>
             
-            <h3 className="font-bold text-xl mb-3" style={{color: '#374151'}}>Ready to Connect?</h3>
-            <p className="text-gray-600 mb-6 max-w-48">
+            <h3 className="font-bold text-lg mb-2" style={{color: '#374151'}}>Ready to Connect?</h3>
+            <p className="text-gray-600 mb-5 max-w-44 text-sm">
               Your conversations will appear here. Start chatting with amazing people!
             </p>
             
             <button
               onClick={() => setShowAllUsers(true)}
-              className="px-8 py-4 text-white rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3"
+              className="px-6 py-3 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
               style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}
             >
-              <Sparkles className="w-5 h-5" />
+              <Sparkles className="w-4 h-4" />
               <span>Discover People</span>
             </button>
           </div>
         )}
       </div>
 
-      {/* Revolutionary Footer */}
-      <div className="relative z-10 p-4 space-y-3">
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-1 shadow-lg border border-white/50">
+      {/* Compact Footer */}
+      <div className="relative z-10 p-3 space-y-2">
+        <div className="bg-white/80 backdrop-blur-lg rounded-xl p-0.5 shadow-md border border-white/50">
           <Link
             href="/profile"
-            className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gray-50 transition-all duration-300 group"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-all duration-300 group"
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow"
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow"
                  style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}>
-              <UserCircle className="w-5 h-5 text-white" />
+              <UserCircle className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1">
-              <span className="font-semibold" style={{color: '#374151'}}>Profile Settings</span>
-              <div className="text-xs text-gray-500">Customize your experience</div>
+              <span className="font-medium text-sm" style={{color: '#374151'}}>Profile Settings</span>
             </div>
           </Link>
         </div>
 
         <button
           onClick={handleLogout}
-          className="w-full bg-white/80 backdrop-blur-lg rounded-2xl p-4 shadow-lg border border-white/50 hover:bg-red-50 transition-all duration-300 group flex items-center gap-4"
+          className="w-full bg-white/80 backdrop-blur-lg rounded-xl p-0.5 shadow-md border border-white/50 hover:shadow-lg transition-all duration-300 group"
         >
-          <div className="w-10 h-10 rounded-xl bg-red-100 group-hover:bg-red-200 flex items-center justify-center shadow-md transition-all">
-            <LogOut className="w-5 h-5 text-red-600" />
-          </div>
-          <div className="flex-1 text-left">
-            <span className="font-semibold text-red-600 group-hover:text-red-700">Sign Out</span>
-            <div className="text-xs text-red-400">See you later!</div>
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-300">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm transition-all duration-300"
+                 style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}>
+              <LogOut className="w-4 h-4 text-white" />
+            </div>
+            <div className="flex-1 text-left">
+              <span className="font-medium text-sm" style={{color: '#A78BFA'}}>Sign Out</span>
+            </div>
           </div>
         </button>
       </div>
