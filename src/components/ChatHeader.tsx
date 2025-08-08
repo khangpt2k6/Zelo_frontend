@@ -36,8 +36,16 @@ const ChatHeader = ({
             <>
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center ring-2 ring-purple-200/50">
-                    <UserCircle className="w-8 h-8 text-purple-400" />
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center ring-2 ring-purple-200/50 overflow-hidden">
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <UserCircle className="w-8 h-8 text-purple-400" />
+                    )}
                   </div>
                   {/* Online status */}
                   {isOnlineUser && (

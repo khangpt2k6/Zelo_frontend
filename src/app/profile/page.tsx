@@ -6,19 +6,67 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Loading from "@/components/Loading";
-import { ArrowLeft, Save, User, UserCircle, Edit3, Check, X, Settings, Crown } from "lucide-react";
+import { ArrowLeft, Save, User, UserCircle, Edit3, Check, X, Settings, Crown, Camera, Upload, Loader2 } from "lucide-react";
 
 const ProfilePage = () => {
   const { user, isAuth, loading, setUser } = useAppData();
 
   const [isEdit, setIsEdit] = useState(false);
   const [name, setName] = useState<string | undefined>("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const router = useRouter();
 
   const editHandler = () => {
     setIsEdit(!isEdit);
     setName(user?.name);
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const uploadAvatar = async () => {
+    if (!avatarFile) return;
+
+    const token = Cookies.get("token");
+    const formData = new FormData();
+    formData.append("avatar", avatarFile);
+
+    setIsUploadingAvatar(true);
+    try {
+      const { data } = await axios.post(
+        `${user_service}/api/v1/update/avatar`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      Cookies.set("token", data.token, {
+        expires: 15,
+        secure: false,
+        path: "/",
+      });
+
+      toast.success(data.message);
+      setUser(data.user);
+      setAvatarFile(null);
+      setAvatarPreview("");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to upload avatar");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   };
 
   const submitHandler = async (e: any) => {
@@ -94,12 +142,34 @@ const ProfilePage = () => {
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center gap-6">
                     <div className="relative">
-                      <div className="w-28 h-28 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/30 shadow-xl">
-                        <UserCircle className="w-16 h-16 text-white" />
+                      <div className="w-28 h-28 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/30 shadow-xl overflow-hidden">
+                        {user?.avatar || avatarPreview ? (
+                          <img
+                            src={avatarPreview || user?.avatar}
+                            alt="Avatar"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <UserCircle className="w-16 h-16 text-white" />
+                        )}
                       </div>
                       <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-400 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
                         <div className="w-3 h-3 bg-white rounded-full"></div>
                       </div>
+                      
+                      {/* Avatar Upload Button */}
+                      <label className="absolute inset-0 cursor-pointer group" title="Upload profile picture">
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full flex items-center justify-center">
+                          <Camera className="w-6 h-6 text-white" />
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleAvatarChange}
+                          aria-label="Upload profile picture"
+                        />
+                      </label>
                     </div>
                     <div className="text-white">
                       <div className="flex items-center gap-3 mb-2">
@@ -132,6 +202,57 @@ const ProfilePage = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Info Section */}
                 <div className="lg:col-span-2 space-y-6">
+                  {/* Avatar Upload Section */}
+                  {avatarFile && (
+                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{backgroundColor: '#A78BFA'}}>
+                          <Upload className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold" style={{color: '#374151'}}>Upload Avatar</h3>
+                          <p className="text-sm text-gray-500">Preview and upload your new profile picture</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-6">
+                        <div className="relative">
+                          <img
+                            src={avatarPreview}
+                            alt="Avatar preview"
+                            className="w-24 h-24 rounded-full object-cover border-4 border-purple-100 shadow-lg"
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={uploadAvatar}
+                            disabled={isUploadingAvatar}
+                            className="flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}
+                          >
+                            {isUploadingAvatar ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Upload className="w-4 h-4" />
+                            )}
+                            {isUploadingAvatar ? "Uploading..." : "Upload Avatar"}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setAvatarFile(null);
+                              setAvatarPreview("");
+                            }}
+                            className="flex items-center gap-2 px-6 py-3 bg-gray-200 hover:bg-gray-300 font-semibold rounded-xl transition-all duration-300"
+                            style={{color: '#374151'}}
+                          >
+                            <X className="w-4 h-4" />
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{backgroundColor: '#A78BFA'}}>
@@ -146,13 +267,16 @@ const ProfilePage = () => {
                     {isEdit ? (
                       <form onSubmit={submitHandler} className="space-y-4">
                         <div className="relative">
+                          <label htmlFor="display-name" className="sr-only">Display Name</label>
                           <input
+                            id="display-name"
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             className="w-full px-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-100 transition-all duration-300"
                             style={{color: '#374151'}}
                             placeholder="Enter your display name"
+                            aria-label="Enter your display name"
                           />
                           <User className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                         </div>
@@ -213,12 +337,25 @@ const ProfilePage = () => {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600 text-sm">Member Since</span>
-                        <span className="text-sm font-medium" style={{color: '#374151'}}>2024</span>
+                        <span className="text-sm font-medium" style={{color: '#374151'}}>2025</span>
                       </div>
                     </div>
                   </div>
 
-
+                  {/* Avatar Upload Instructions */}
+                  <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <h3 className="text-lg font-bold mb-4" style={{color: '#374151'}}>Profile Picture</h3>
+                    <div className="space-y-4">
+                      <p className="text-sm text-gray-600">
+                        Click on your profile picture above to upload a new avatar. 
+                        Supported formats: JPG, PNG, GIF, WebP (max 5MB)
+                      </p>
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Camera className="w-4 h-4" />
+                        <span>Hover over your avatar to upload</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

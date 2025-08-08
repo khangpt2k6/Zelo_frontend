@@ -27,6 +27,29 @@ const MessageInput = ({
     setIsUploading(false);
   };
 
+  const handleEmojiSend = async (emoji: string) => {
+    const newMessage = message + emoji;
+    setMessage(newMessage);
+    
+    // Create a mock event and send the message
+    const mockEvent = { preventDefault: () => {} };
+    setIsUploading(true);
+    
+    // Temporarily set the message to include the emoji
+    const originalMessage = message;
+    setMessage(newMessage);
+    
+    try {
+      await handleMessageSend(mockEvent, imageFile);
+      setImageFile(null);
+    } catch (error) {
+      // Revert message on error
+      setMessage(originalMessage);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   if (!selectedUser) return null;
 
   return (
@@ -117,25 +140,103 @@ const MessageInput = ({
         </div>
 
         {/* Quick actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-3">
+          {/* Quick text messages */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => handleEmojiSend("Hello! 👋")}
+              disabled={isUploading}
+              className={`px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl text-blue-600 font-medium transition-all border border-blue-100 text-sm ${
+                isUploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              Hello! 👋
+            </button>
+            <button
+              type="button"
+              onClick={() => handleEmojiSend("How are you?")}
+              disabled={isUploading}
+              className={`px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl text-blue-600 font-medium transition-all border border-blue-100 text-sm ${
+                isUploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              How are you?
+            </button>
+            <button
+              type="button"
+              onClick={() => handleEmojiSend("How's it going? 😊")}
+              disabled={isUploading}
+              className={`px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl text-blue-600 font-medium transition-all border border-blue-100 text-sm ${
+                isUploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              How's it going? 😊
+            </button>
+            <button
+              type="button"
+              onClick={() => handleEmojiSend("Good morning! ☀️")}
+              disabled={isUploading}
+              className={`px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl text-blue-600 font-medium transition-all border border-blue-100 text-sm ${
+                isUploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              Good morning! ☀️
+            </button>
+            <button
+              type="button"
+              onClick={() => handleEmojiSend("What's up?")}
+              disabled={isUploading}
+              className={`px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl text-blue-600 font-medium transition-all border border-blue-100 text-sm ${
+                isUploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              What's up?
+            </button>
+          </div>
+
+          {/* Emoji reactions */}
           <div className="flex gap-2">
+            <span className="text-sm text-gray-500 font-medium flex items-center">Quick reactions:</span>
             <button
               type="button"
-              className="px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl text-purple-600 font-medium transition-all border border-purple-100"
+              onClick={() => handleEmojiSend("👋")}
+              disabled={isUploading}
+              className={`px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl text-purple-600 font-medium transition-all border border-purple-100 ${
+                isUploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              👋 Wave
+              👋
             </button>
             <button
               type="button"
-              className="px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl text-purple-600 font-medium transition-all border border-purple-100"
+              onClick={() => handleEmojiSend("❤️")}
+              disabled={isUploading}
+              className={`px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl text-purple-600 font-medium transition-all border border-purple-100 ${
+                isUploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              ❤️ Heart
+              ❤️
             </button>
             <button
               type="button"
-              className="px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl text-purple-600 font-medium transition-all border border-purple-100"
+              onClick={() => handleEmojiSend("👍")}
+              disabled={isUploading}
+              className={`px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl text-purple-600 font-medium transition-all border border-purple-100 ${
+                isUploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              👍 Like
+              👍
+            </button>
+            <button
+              type="button"
+              onClick={() => handleEmojiSend("😊")}
+              disabled={isUploading}
+              className={`px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl text-purple-600 font-medium transition-all border border-purple-100 ${
+                isUploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              😊
             </button>
           </div>
         </div>

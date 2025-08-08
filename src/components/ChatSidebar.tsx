@@ -127,9 +127,17 @@ const ChatSidebar = ({
                   <div className="relative">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md relative overflow-hidden" 
                          style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}>
-                      <span className="text-white font-bold text-lg">
-                        {loggedInUser.name.charAt(0).toUpperCase()}
-                      </span>
+                      {loggedInUser.avatar ? (
+                        <img
+                          src={loggedInUser.avatar}
+                          alt={loggedInUser.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-white font-bold text-lg">
+                          {loggedInUser.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
                     </div>
                   </div>
                   
@@ -229,9 +237,17 @@ const ChatSidebar = ({
                         <div className="relative">
                           <div className="w-11 h-11 rounded-lg flex items-center justify-center shadow-md relative overflow-hidden"
                                style={{background: `linear-gradient(${135 + index * 30}deg, #A78BFA, #F472B6)`}}>
-                            <span className="text-white font-semibold">
-                              {u.name.charAt(0).toUpperCase()}
-                            </span>
+                            {u.avatar ? (
+                              <img
+                                src={u.avatar}
+                                alt={u.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-white font-semibold">
+                                {u.name.charAt(0).toUpperCase()}
+                              </span>
+                            )}
                           </div>
                           {onlineUsers.includes(u._id) && (
                             <div className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-400 border-2 border-white shadow-sm"></div>
@@ -298,9 +314,17 @@ const ChatSidebar = ({
                           isSelected ? 'ring-2 ring-purple-200' : ''
                         }`}
                              style={{background: `linear-gradient(${135 + index * 25}deg, #A78BFA, #F472B6)`}}>
-                          <span className="text-white font-semibold">
-                            {chat.user.name.charAt(0).toUpperCase()}
-                          </span>
+                          {chat.user.avatar ? (
+                            <img
+                              src={chat.user.avatar}
+                              alt={chat.user.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-white font-semibold">
+                              {chat.user.name.charAt(0).toUpperCase()}
+                            </span>
+                          )}
                         </div>
                         {onlineUsers.includes(chat.user._id) && (
                           <div className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-400 border-2 border-white shadow-sm">
@@ -331,7 +355,7 @@ const ChatSidebar = ({
                               </div>
                             )}
                             <span className="text-xs text-gray-600 truncate flex-1 font-medium">
-                              {latestMessage.text || "📷 Photo"}
+                              {latestMessage.text || null}
                             </span>
                           </div>
                         )}
