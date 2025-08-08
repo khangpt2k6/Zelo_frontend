@@ -11,9 +11,7 @@ import {
   Settings,
   Users,
   Sparkles,
-  Zap,
   Globe,
-  Star,
   Bell,
   Heart,
 } from "lucide-react";
@@ -134,9 +132,6 @@ const ChatSidebar = ({
                       </span>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-green-400 border-3 border-white shadow-lg flex items-center justify-center">
-                      <Zap className="w-3 h-3 text-white" />
-                    </div>
                   </div>
                   
                   <div className="flex-1">
@@ -144,7 +139,6 @@ const ChatSidebar = ({
                     <div className="flex items-center gap-2 mt-1">
                       <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                       <span className="text-sm text-gray-600">Active now</span>
-                      <Star className="w-3 h-3" style={{color: '#F472B6'}} />
                     </div>
                   </div>
                 </div>
