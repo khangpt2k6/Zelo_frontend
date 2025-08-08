@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import { ArrowRight, ChevronLeft, Loader2, Lock } from "lucide-react";
+import { ArrowRight, ChevronLeft, Loader2, Shield, Mail, Clock } from "lucide-react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import Cookies from "js-cookie";
@@ -69,6 +69,7 @@ const VerifyOtp = () => {
       inputRefs.current[5]?.focus();
     }
   };
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const otpString = otp.join("");
@@ -123,93 +124,153 @@ const VerifyOtp = () => {
   if (userLoading) return <Loading />;
 
   if (isAuth) redirect("/chat");
+  
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-8">
-          <div className="text-center mb-8 relative">
-            <button
-              className="absolute top-0 left-0 p-2 text-gray-300 hover:text-white"
-              onClick={() => router.push("/login")}
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <div className="mx-auto w-20 h-20 bg-blue-600 rounded-lg flex items-center justify-center mb-6">
-              <Lock size={40} className="text-white" />
-            </div>
-            <h1 className="text-4xl font-bold text-white mb-3">
-              Verify Your Email
-            </h1>
-            <p className="text-gray-300 text-lg">
-              We have sent a 6-digit code to
-            </p>
-            <p className="text-blue-400 font-medium">{email}</p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-purple-50" style={{backgroundColor: '#FFF1F2'}}>
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-20" style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-10" style={{background: 'linear-gradient(45deg, #F472B6, #A78BFA)'}}></div>
+      </div>
+      
+      <div className="relative z-10 flex items-center justify-center min-h-screen p-6">
+        <div className="w-full max-w-lg">
+          {/* Back button - floating style */}
+          <button
+            className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-lg hover:shadow-xl transition-all duration-300 text-gray-600 hover:text-gray-800"
+            onClick={() => router.push("/login")}
+            style={{color: '#374151'}}
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">Back to Login</span>
+          </button>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-4 text-center">
-                Enter your 6 digit otp here
-              </label>
-              <div className="flex justify-center in-checked: space-x-3">
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    ref={(el: HTMLInputElement | null) => {
-                      inputRefs.current[index] = el;
-                    }}
-                    type="text"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleInputChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    onPaste={index === 0 ? handlePaste : undefined}
-                    className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-600 rounded-lg bg-gray-700 text-white"
-                  />
-                ))}
+          {/* Main card */}
+          <div className="bg-white rounded-3xl shadow-2xl p-8 backdrop-blur-sm border border-white/50" style={{backgroundColor: '#EDE9FE'}}>
+            {/* Header section */}
+            <div className="text-center mb-10">
+              <div className="relative mb-6">
+                <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center shadow-lg" style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}>
+                  <Shield size={36} className="text-white" />
+                </div>
+              </div>
+              <h1 className="text-3xl font-bold mb-3" style={{color: '#374151'}}>
+                Verify Your Email
+              </h1>
+              <p className="text-gray-600 mb-2">
+                Enter the 6-digit code we sent to
+              </p>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full" style={{backgroundColor: '#A78BFA', color: 'white'}}>
+                <Mail size={16} />
+                <span className="font-medium text-sm">{email}</span>
               </div>
             </div>
-            {error && (
-              <div className="bg-red-900 border border-red-700 rounded-lg p-3">
-                <p className="text-red-300 text-sm text-center">{error}</p>
-              </div>
-            )}
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-5 h-5" />
-                  Verifying...
+
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* OTP Input Section */}
+              <div className="space-y-4">
+                <label className="block text-center font-medium" style={{color: '#374151'}}>
+                  Enter verification code
+                </label>
+                <div className="flex justify-center gap-3">
+                  {otp.map((digit, index) => (
+                    <div key={index} className="relative">
+                      <input
+                        ref={(el: HTMLInputElement | null) => {
+                          inputRefs.current[index] = el;
+                        }}
+                        type="text"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleInputChange(index, e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(index, e)}
+                        onPaste={index === 0 ? handlePaste : undefined}
+                        className="w-14 h-14 text-center text-2xl font-bold rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 bg-white shadow-sm"
+                        style={{
+                          borderColor: digit ? '#A78BFA' : '#E5E7EB',
+                          color: '#374151'
+                        }}
+                      />
+                      {digit && (
+                        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-8 h-1 rounded-full" style={{backgroundColor: '#A78BFA'}}></div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ) : (
-                <div className="flex items-center justify-center gap-2">
-                  <span>Verify</span>
-                  <ArrowRight className="w-5 h-5" />
+              </div>
+
+              {/* Error message */}
+              {error && (
+                <div className="rounded-2xl p-4 bg-red-50 border border-red-200">
+                  <p className="text-red-600 text-sm text-center font-medium">{error}</p>
                 </div>
               )}
-            </button>
-          </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-400 text-sm mb-4">
-              Din't receive the code?
-            </p>
-            {timer > 0 ? (
-              <p className="text-gray-400 text-sm">
-                Resend code in {timer} seconds
-              </p>
-            ) : (
+              {/* Submit button */}
               <button
-                className="text-blue-400 hover:text-blue-300 font-medium text-sm disabled:opacity-50"
-                disabled={resendLoading}
-                onClick={handleResendOtp}
+                type="submit"
+                className="w-full py-4 px-6 rounded-2xl font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+                style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}
+                disabled={loading}
               >
-                {resendLoading ? "Sending..." : "Resend Code"}
+                {loading ? (
+                  <div className="flex items-center justify-center gap-3">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Verifying your code...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-3">
+                    <span>Verify & Continue</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </div>
+                )}
               </button>
-            )}
+            </form>
+
+            {/* Footer section */}
+            <div className="mt-8 text-center space-y-4">
+              <p className="text-gray-600 text-sm">
+                Didn't receive the code?
+              </p>
+              
+              {timer > 0 ? (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100">
+                  <Clock size={16} className="text-gray-500" />
+                  <span className="text-gray-600 text-sm font-medium">
+                    Resend in {timer}s
+                  </span>
+                </div>
+              ) : (
+                <button
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 hover:shadow-lg disabled:opacity-50 transform hover:scale-105"
+                  style={{
+                    backgroundColor: '#F472B6',
+                    color: 'white'
+                  }}
+                  disabled={resendLoading}
+                  onClick={handleResendOtp}
+                >
+                  {resendLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mail size={16} />
+                      <span>Resend Code</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom decorative text */}
+          <div className="text-center mt-6">
+            <p className="text-sm text-gray-500">
+              Protected by advanced security measures
+            </p>
           </div>
         </div>
       </div>

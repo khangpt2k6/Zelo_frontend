@@ -367,7 +367,7 @@ const ChatApp = () => {
 
   if (loading) return <Loading />;
   return (
-    <div className="min-h-screen flex bg-gray-900 text-white relative overflow-hidden">
+    <div className="min-h-screen flex bg-gradient-to-br from-pink-50 via-white to-purple-50 text-gray-800 relative overflow-hidden">
       <ChatSidebar
         sidebarOpen={siderbarOpen}
         setSidebarOpen={setSiderbarOpen}
@@ -382,7 +382,8 @@ const ChatApp = () => {
         createChat={createChat}
         onlineUsers={onlineUsers}
       />
-      <div className="flex-1 flex flex-col justify-between p-4 backdrop-blur-xl bg-white/5 border-1 border-white/10">
+
+      <div className="flex-1 flex flex-col justify-between p-4 backdrop-blur-xl bg-white/60 border border-pink-100/50 rounded-tl-3xl">
         <ChatHeader
           user={user}
           setSidebarOpen={setSiderbarOpen}
