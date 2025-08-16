@@ -2,7 +2,7 @@
 
 A modern chat application with secure authentication and real-time messaging capabilities.
 
-<img width="1906" height="914" alt="530244524_765552832530943_2073811762231959161_n" src="https://github.com/user-attachments/assets/e6c6d337-a6a7-417c-9e40-c82768050bfe" />
+<img width="1901" height="870" alt="image" src="https://github.com/user-attachments/assets/e8e8f2e4-b9f1-4e66-9623-59a516e26488" />
 
 #### Sign in - Verify OTP
 <img width="450" height="400" alt="anh1" src="https://github.com/user-attachments/assets/a5118f9f-5bfb-45ce-9555-d6893a9690b2" />
