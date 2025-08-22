@@ -6,7 +6,9 @@ import ChatMessages from "@/components/ChatMessages";
 import ChatSidebar from "@/components/ChatSidebar";
 import MessageInput from "@/components/MessageInput";
 import PinnedMessages from "@/components/PinnedMessages";
-import { useEffect, useState } from "react";
+import Loading from "@/components/Loading";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -42,7 +44,10 @@ export interface Message {
 }
 
 const ChatPage = () => {
-  const { user, chats, users, logoutUser } = useAppData();
+  const { user, chats, users, logoutUser, fetchChats, isAuth, loading } = useAppData();
+  const router = useRouter();
+
+  // All hooks must be declared before any conditional returns
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[] | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -53,89 +58,173 @@ const ChatPage = () => {
   const [showAllUsers, setShowAllUsers] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
+  // Redirect to login if not authenticated
   useEffect(() => {
-    if (user) {
-      console.log("Setting up socket connection to:", process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://localhost:5002");
-      const newSocket = io(process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://localhost:5002");
-      setSocket(newSocket);
-
-      newSocket.on("connect", () => {
-        console.log("Socket connected successfully");
-      });
-
-      newSocket.on("connect_error", (error) => {
-        console.error("Socket connection error:", error);
-      });
-
-      newSocket.emit("setup", user);
-
-      newSocket.on("newMessage", (message: Message) => {
-        console.log("Received new message via socket:", message);
-        setMessages((prev) => {
-          if (!prev) return [message];
-          return [...prev, message];
-        });
-      });
-
-      newSocket.on("messagesSeen", (data: { chatId: string; seenBy: string; messageIds: string[] }) => {
-        setMessages((prev) => {
-          if (!prev) return prev;
-          return prev.map((msg) => {
-            if (data.messageIds.includes(msg._id)) {
-              return { ...msg, seen: true, seenAt: new Date().toISOString() };
-            }
-            return msg;
-          });
-        });
-      });
-
-      newSocket.on("messagePinned", (data: { messageId: string; isPinned: boolean }) => {
-        setMessages((prev) => {
-          if (!prev) return prev;
-          return prev.map((msg) => {
-            if (msg._id === data.messageId) {
-              return { 
-                ...msg, 
-                isPinned: data.isPinned,
-                pinnedAt: data.isPinned ? new Date().toISOString() : undefined
-              };
-            }
-            return msg;
-          });
-        });
-
-        // Update pinned messages list
-        if (data.isPinned) {
-          setPinnedMessages((prev) => {
-            const message = messages?.find(m => m._id === data.messageId);
-            if (message && !prev.find(m => m._id === data.messageId)) {
-              return [...prev, { ...message, isPinned: true, pinnedAt: new Date().toISOString() }];
-            }
-            return prev;
-          });
-        } else {
-          setPinnedMessages((prev) => prev.filter(m => m._id !== data.messageId));
-        }
-      });
-
-      newSocket.on("messageReaction", (data: { messageId: string; reactions: any[] }) => {
-        setMessages((prev) => {
-          if (!prev) return prev;
-          return prev.map((msg) => {
-            if (msg._id === data.messageId) {
-              return { ...msg, reactions: data.reactions };
-            }
-            return msg;
-          });
-        });
-      });
-
-      return () => {
-        newSocket.close();
-      };
+    if (!loading && !isAuth) {
+      router.push("/login");
     }
-  }, [user]);
+  }, [isAuth, loading, router]);
+
+  // Socket connection effect
+  useEffect(() => {
+    // Only set up socket if user exists and is authenticated
+    if (!user || !isAuth) return;
+
+    console.log("Setting up socket connection to:", process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://54.80.194.225:5002");
+    const newSocket = io(process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://54.80.194.225:5002");
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("Socket connected successfully");
+    });
+
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+    });
+
+    newSocket.emit("setup", user);
+
+    newSocket.on("newMessage", (message: Message) => {
+      console.log("Received new message via socket:", message);
+      setMessages((prev) => {
+        if (!prev) return [message];
+        return [...prev, message];
+      });
+    });
+
+    newSocket.on("messagesSeen", (data: { chatId: string; seenBy: string; messageIds: string[] }) => {
+      setMessages((prev) => {
+        if (!prev) return prev;
+        return prev.map((msg) => {
+          if (data.messageIds.includes(msg._id)) {
+            return { ...msg, seen: true, seenAt: new Date().toISOString() };
+          }
+          return msg;
+        });
+      });
+    });
+
+    newSocket.on("messagePinned", (data: { messageId: string; isPinned: boolean }) => {
+      setMessages((prev) => {
+        if (!prev) return prev;
+        return prev.map((msg) => {
+          if (msg._id === data.messageId) {
+            return { 
+              ...msg, 
+              isPinned: data.isPinned,
+              pinnedAt: data.isPinned ? new Date().toISOString() : undefined
+            };
+          }
+          return msg;
+        });
+      });
+
+      // Update pinned messages list
+      if (data.isPinned) {
+        setPinnedMessages((prev) => {
+          const message = messages?.find(m => m._id === data.messageId);
+          if (message && !prev.find(m => m._id === data.messageId)) {
+            return [...prev, { ...message, isPinned: true, pinnedAt: new Date().toISOString() }];
+          }
+          return prev;
+        });
+      } else {
+        setPinnedMessages((prev) => prev.filter(m => m._id !== data.messageId));
+      }
+    });
+
+    newSocket.on("messageReaction", (data: { messageId: string; reactions: any[] }) => {
+      setMessages((prev) => {
+        if (!prev) return prev;
+        return prev.map((msg) => {
+          if (msg._id === data.messageId) {
+            return { ...msg, reactions: data.reactions };
+          }
+          return msg;
+        });
+      });
+    });
+
+    return () => {
+      newSocket.close();
+    };
+  }, [user, isAuth]);
+
+  // useCallback hooks must also be declared before any conditional returns
+  const fetchMessages = useCallback(async () => {
+    if (!selectedUser) return;
+
+    setIsLoadingMessages(true);
+    try {
+      const token = Cookies.get("token");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://54.80.194.225:5002"}/api/v1/message/${selectedUser}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Fetched existing messages:", response.data.messages);
+      setMessages(response.data.messages);
+    } catch (error: any) {
+      console.error("Error fetching messages:", error);
+      if (error.response?.status === 401) {
+        // Token expired or invalid, redirect to login
+        logoutUser();
+      } else if (error.response?.status === 404) {
+        console.log("Chat not found, this might be a new conversation");
+        setMessages([]);
+      } else {
+        console.error("Unexpected error:", error.response?.data || error.message);
+        setMessages([]);
+      }
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  }, [selectedUser]);
+
+  const fetchPinnedMessages = useCallback(async () => {
+    if (!selectedUser) return;
+
+    try {
+      const token = Cookies.get("token");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://54.80.194.225:5002"}/api/v1/chat/${selectedUser}/pinned`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setPinnedMessages(response.data.pinnedMessages);
+    } catch (error: any) {
+      console.error("Error fetching pinned messages:", error);
+      if (error.response?.status === 401) {
+        // Token expired or invalid, redirect to login
+        logoutUser();
+      }
+    }
+  }, [selectedUser]);
+
+  // Fetch messages when selectedUser changes - MOVED HERE after functions are defined
+  useEffect(() => {
+    if (selectedUser) {
+      console.log("Selected user changed, fetching messages for:", selectedUser);
+      fetchMessages();
+      fetchPinnedMessages();
+    } else {
+      // Clear messages when no user is selected
+      setMessages(null);
+      setPinnedMessages([]);
+    }
+  }, [selectedUser, fetchMessages, fetchPinnedMessages]);
+
+  // Early returns after all hooks are declared
+  if (loading) return <Loading />;
+  if (!isAuth || !user) return <Loading />;
 
   const handleSendMessage = async (text: string, image?: File) => {
     if (!selectedUser || !user) return;
@@ -191,11 +280,11 @@ const ChatPage = () => {
 
       const endpoint = replyToMessage ? "/api/v1/message/reply" : "/api/v1/message";
       const token = Cookies.get("token");
-      
-      console.log("Making request to:", `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://localhost:5002"}${endpoint}`);
-      
+
+      console.log("Making request to:", `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://54.80.194.225:5002"}${endpoint}`);
+
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://localhost:5002"}${endpoint}`,
+        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://54.80.194.225:5002"}${endpoint}`,
         formData,
         {
           headers: {
@@ -234,7 +323,7 @@ const ChatPage = () => {
     try {
       const token = Cookies.get("token");
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://localhost:5002"}/api/v1/message/${messageId}/pin`,
+        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://54.80.194.225:5002"}/api/v1/message/${messageId}/pin`,
         {},
         {
           headers: {
@@ -255,7 +344,7 @@ const ChatPage = () => {
       const token = Cookies.get("token");
       
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://localhost:5002"}/api/v1/message/${messageId}/reaction`,
+        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://54.80.194.225:5002"}/api/v1/message/${messageId}/reaction`,
         { emoji },
         {
           headers: {
@@ -314,7 +403,7 @@ const ChatPage = () => {
     try {
       const token = Cookies.get("token");
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://localhost:5002"}/api/v1/message/${messageId}/pin`,
+        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://54.80.194.225:5002"}/api/v1/message/${messageId}/pin`,
         {},
         {
           headers: {
@@ -327,50 +416,11 @@ const ChatPage = () => {
     }
   };
 
-  const fetchMessages = async () => {
-    if (!selectedUser) return;
-
-    try {
-      const token = Cookies.get("token");
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://localhost:5002"}/api/v1/message/${selectedUser}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log("Fetched existing messages:", response.data.messages);
-      setMessages(response.data.messages);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
-  };
-
-  const fetchPinnedMessages = async () => {
-    if (!selectedUser) return;
-
-    try {
-      const token = Cookies.get("token");
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://localhost:5002"}/api/v1/chat/${selectedUser}/pinned`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setPinnedMessages(response.data.pinnedMessages);
-    } catch (error) {
-      console.error("Error fetching pinned messages:", error);
-    }
-  };
-
   const createChat = async (selectedUser: User) => {
     try {
       const token = Cookies.get("token");
       const response = await axios.post(
-        `${"http://localhost:5002"}/api/v1/chat/new`,
+        `${process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://54.80.194.225:5002"}/api/v1/chat/new`,
         {
           otherUserId: selectedUser._id,
         },
@@ -380,20 +430,21 @@ const ChatPage = () => {
           },
         }
       );
+      
+      // Set the selected user to the new chat
       setSelectedUser(response.data.chatId);
+      
+      // Refresh the chats list to include the new chat
+      // Wait a bit for the backend to process, then refresh
+      setTimeout(() => {
+        fetchChats();
+      }, 500);
+      
+      console.log("Chat created successfully:", response.data);
     } catch (error) {
       console.error("Error creating chat:", error);
     }
   };
-
-  useEffect(() => {
-    if (selectedUser) {
-      // Clear previous messages when switching chats
-      setMessages(null);
-      fetchMessages();
-      fetchPinnedMessages();
-    }
-  }, [selectedUser]);
 
   if (!user) {
     return (
@@ -404,6 +455,14 @@ const ChatPage = () => {
       </div>
     );
   }
+
+  const handleLogout = async () => {
+    await logoutUser();
+    // Redirect to login page
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -418,7 +477,7 @@ const ChatPage = () => {
         chats={chats}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
-        handleLogout={logoutUser}
+        handleLogout={handleLogout}
         createChat={createChat}
         onlineUsers={onlineUsers}
       />
@@ -440,6 +499,25 @@ const ChatPage = () => {
               setSidebarOpen={setSidebarOpen}
               isTyping={isTyping}
               onlineUsers={onlineUsers}
+              // Group chat properties
+              isGroupChat={(() => {
+                const chat = chats?.find(c => c.chat._id === selectedUser);
+                return chat?.user.isGroup || chat?.chat.chatType === 'group';
+              })()}
+              groupMembers={(() => {
+                const chat = chats?.find(c => c.chat._id === selectedUser);
+                return chat?.chat.users || [];
+              })()}
+              memberCount={(() => {
+                const chat = chats?.find(c => c.chat._id === selectedUser);
+                return chat?.user.memberCount || chat?.chat.users?.length || 0;
+              })()}
+              groupName={(() => {
+                const chat = chats?.find(c => c.chat._id === selectedUser);
+                return chat?.chat.groupName || chat?.user.name;
+              })()}
+              // Pass all users to get member details
+              allUsers={users || []}
             />
 
             {/* Pinned Messages */}
@@ -457,6 +535,7 @@ const ChatPage = () => {
               selectedUser={selectedUser}
               messages={messages}
               loggedInUser={user}
+              isLoading={isLoadingMessages}
               otherUser={(() => {
                 // Find the chat and get the other user's information
                 const chat = chats?.find(c => c.chat._id === selectedUser);
@@ -479,21 +558,78 @@ const ChatPage = () => {
               onCancelReply={handleCancelReply}
             />
           </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-600 mb-2">
-                Select a chat to start messaging
-              </h2>
-              <p className="text-gray-500">
-                Choose a user from the sidebar to begin your conversation
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+                 ) : (
+            <div className="flex-1 flex items-center justify-center relative overflow-hidden" style={{backgroundColor: '#FFF1F2'}}>
+              {/* Subtle background patterns */}
+              <div className="absolute inset-0">
+                <div className="absolute top-20 left-20 w-32 h-32 rounded-full opacity-5" 
+                     style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}></div>
+                <div className="absolute bottom-20 right-20 w-24 h-24 rounded-full opacity-5" 
+                     style={{background: 'linear-gradient(45deg, #F472B6, #A78BFA)'}}></div>
+                <div className="absolute top-1/2 left-10 w-16 h-16 rounded-full opacity-5" 
+                     style={{background: 'linear-gradient(90deg, #A78BFA, #F472B6)'}}></div>
+              </div>
 
-export default ChatPage;
+              {/* Main content */}
+              <div className="text-center space-y-8 p-8 relative z-10">
+                {/* Message Icon */}
+                <div className="relative mx-auto w-24 h-24 mb-8">
+                  <div className="w-full h-full rounded-2xl shadow-xl flex items-center justify-center transform rotate-6" 
+                       style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}>
+                    <svg 
+                      className="w-12 h-12 text-white transform -rotate-6" 
+                      fill="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+                    </svg>
+                  </div>
+                  
+                  {/* Small decorative dots */}
+                  <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full animate-pulse" 
+                       style={{backgroundColor: '#F472B6'}}></div>
+                  <div className="absolute -bottom-1 -left-1 w-2 h-2 rounded-full animate-pulse" 
+                       style={{backgroundColor: '#A78BFA', animationDelay: '0.5s'}}></div>
+                </div>
+
+                {/* Welcome Text */}
+                <div className="space-y-4">
+                  <h1 className="text-4xl font-bold" 
+                      style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text'}}>
+                    Welcome to Zelo
+                  </h1>
+                  
+                  <div className="space-y-2">
+                    <p className="text-lg" style={{color: '#374151'}}>
+                      Your modern chat experience starts here
+                    </p>
+                    <p className="text-base" style={{color: '#6B7280'}}>
+                      Select a user from the sidebar to begin your conversation
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Button */}
+                <div className="pt-6">
+                  <button 
+                    onClick={() => setSidebarOpen(true)}
+                    className="px-8 py-3 text-white rounded-full font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                    style={{background: 'linear-gradient(135deg, #A78BFA, #F472B6)'}}
+                  >
+                    <span className="flex items-center space-x-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>Open Sidebar</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+       </div>
+     </div>
+   );
+ };
+
+ export default ChatPage;

@@ -9,6 +9,7 @@ interface ChatMessagesProps {
   messages: Message[] | null;
   loggedInUser: User | null;
   otherUser: User | null; // Add this to get the other user's info
+  isLoading?: boolean; // Add loading state prop
   onReplyMessage?: (message: Message) => void;
   onPinMessage?: (messageId: string) => void;
   onAddReaction?: (messageId: string, emoji: string) => void;
@@ -19,6 +20,7 @@ const ChatMessages = ({
   messages,
   loggedInUser,
   otherUser,
+  isLoading = false,
   onReplyMessage,
   onPinMessage,
   onAddReaction,
@@ -117,6 +119,12 @@ const ChatMessages = ({
             <h3 className="text-xl font-semibold text-gray-600 mb-2">
               Start a conversation now ....
             </h3>
+          </div>
+        ) : isLoading ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="w-16 h-16 mx-auto mb-4 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">Loading messages...</h3>
+            <p className="text-gray-500">Please wait while we fetch your conversation</p>
           </div>
         ) : uniqueMessages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">

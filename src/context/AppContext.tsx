@@ -11,19 +11,27 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 
-export const user_service = process.env.NEXT_PUBLIC_USER_SERVICE || "http://localhost:5000";
-export const chat_service = process.env.NEXT_PUBLIC_CHAT_SERVICE || "http://localhost:5002";
+export const user_service = "http://54.80.194.225:5000";
+export const chat_service = "http://54.80.194.225:5002";
 
 export interface User {
   _id: string;
   name: string;
   email: string;
   avatar?: string;
+  // Group chat properties
+  isGroup?: boolean;
+  memberCount?: number;
+  admins?: string[];
 }
 
 export interface Chat {
   _id: string;
   users: string[];
+  chatType?: "private" | "group";
+  groupName?: string;
+  groupDescription?: string;
+  groupAvatar?: string;
   latestMessage: {
     text: string;
     sender: string;
@@ -87,7 +95,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     Cookies.remove("token");
     setUser(null);
     setIsAuth(false);
+    setChats(null);
+    setUsers(null);
     toast.success("User Logged Out");
+    // Force redirect to login page
+    window.location.href = "/login";
   }
 
   const [chats, setChats] = useState<Chats[] | null>(null);
@@ -126,9 +138,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   useEffect(() => {
     fetchUser();
-    fetchChats();
-    fetchUsers();
   }, []);
+
+  useEffect(() => {
+    if (isAuth && user) {
+      fetchChats();
+      fetchUsers();
+    }
+  }, [isAuth, user]);
 
   return (
     <AppContext.Provider
