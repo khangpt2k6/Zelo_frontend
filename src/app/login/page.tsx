@@ -21,14 +21,31 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
+      console.log('Attempting login with email:', email);
+      console.log('Login URL:', `${user_service}/api/v1/login`);
+      
       const { data } = await axios.post(`${user_service}/api/v1/login`, {
         email,
       });
 
+      console.log('Login response:', data);
       toast.success(data.message);
       router.push(`/verify?email=${email}`);
     } catch (error: any) {
-      toast.error(error.response.data.message);
+      console.error('Login error:', error);
+      
+      // Handle different types of errors
+      if (error.response) {
+        // Server responded with error status
+        const message = error.response.data?.message || 'Login failed';
+        toast.error(message);
+      } else if (error.request) {
+        // Request was made but no response received (network error)
+        toast.error('Network error: Unable to reach the server. Please check if the backend is running.');
+      } else {
+        // Something else happened
+        toast.error('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

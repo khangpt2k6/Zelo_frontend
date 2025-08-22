@@ -1,244 +1,172 @@
-import { Loader2, Paperclip, Send, X, Smile, Image } from "lucide-react";
-import React, { useState } from "react";
+import { Message } from "@/app/chat/page";
+import { User } from "@/context/AppContext";
+import React, { useState, useRef, useEffect } from "react";
+import { Send, Image, X } from "lucide-react";
 
 interface MessageInputProps {
   selectedUser: string | null;
-  message: string;
-  setMessage: (message: string) => void;
-  handleMessageSend: (e: any, imageFile?: File | null) => void;
+  loggedInUser: User | null;
+  onSendMessage: (text: string, image?: File) => void;
+  replyToMessage?: Message | null;
+  onCancelReply?: () => void;
 }
 
 const MessageInput = ({
   selectedUser,
-  message,
-  setMessage,
-  handleMessageSend,
+  loggedInUser,
+  onSendMessage,
+  replyToMessage,
+  onCancelReply,
 }: MessageInputProps) => {
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() && !imageFile) return;
+    if (!message.trim() && !image) return;
 
-    setIsUploading(true);
-    await handleMessageSend(e, imageFile);
-    setImageFile(null);
-    setIsUploading(false);
+    onSendMessage(message, image || undefined);
+    setMessage("");
+    setImage(null);
+    setImagePreview(null);
   };
 
-  const handleEmojiSend = async (emoji: string) => {
-    const newMessage = message + emoji;
-    setMessage(newMessage);
-    
-    // Create a mock event and send the message
-    const mockEvent = { preventDefault: () => {} };
-    setIsUploading(true);
-    
-    // Temporarily set the message to include the emoji
-    const originalMessage = message;
-    setMessage(newMessage);
-    
-    try {
-      await handleMessageSend(mockEvent, imageFile);
-      setImageFile(null);
-    } catch (error) {
-      // Revert message on error
-      setMessage(originalMessage);
-    } finally {
-      setIsUploading(false);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  if (!selectedUser) return null;
+  const removeImage = () => {
+    setImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
+  if (!selectedUser) {
+    return (
+      <div className="p-4 border-t bg-white">
+        <div className="text-center text-gray-500">
+          Select a chat to start messaging
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="border-t border-pink-100/50 bg-white/80 backdrop-blur-sm p-4">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {/* Image preview */}
-        {imageFile && (
-          <div className="relative w-fit">
-            <div className="relative bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-3 border border-purple-100">
-              <img
-                src={URL.createObjectURL(imageFile)}
-                alt="preview"
-                className="w-32 h-32 object-cover rounded-xl shadow-sm"
-              />
-              <button
-                type="button"
-                className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-full p-2 shadow-lg hover:shadow-xl transition-all"
-                onClick={() => setImageFile(null)}
-              >
-                <X className="w-4 h-4 text-white" />
-              </button>
+    <div className="bg-white">
+      {/* Reply preview */}
+      {replyToMessage && (
+        <div className="bg-purple-50 border-b border-purple-200 p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+              </div>
+              <span className="text-sm font-medium text-purple-700">
+                Replying to {replyToMessage.sender === loggedInUser?._id ? 'yourself' : 'message'}
+              </span>
             </div>
-            <div className="mt-2 text-sm text-gray-600 font-medium">
-              Ready to send
-            </div>
+            <button
+              onClick={onCancelReply}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-        )}
+          <div className="mt-1 text-sm text-gray-600 truncate">
+            {replyToMessage.text || "Image"}
+          </div>
+        </div>
+      )}
 
-        {/* Input area */}
-        <div className="flex items-end gap-3">
-          {/* Attachment button */}
-          <label className="cursor-pointer group">
-            <div className="p-3 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 rounded-2xl transition-all shadow-sm hover:shadow-md">
-              <Paperclip className="w-5 h-5 text-purple-600 group-hover:rotate-12 transition-transform" />
+      {/* Image preview */}
+      {imagePreview && (
+        <div className="p-3 border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-12 h-12 object-cover rounded-lg"
+              />
+              <span className="text-sm text-gray-600">{image?.name}</span>
             </div>
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file && file.type.startsWith("image/")) {
-                  setImageFile(file);
-                }
-              }}
-            />
-          </label>
+            <button
+              onClick={removeImage}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="p-4">
+        <div className="flex items-end gap-3">
+          {/* Image upload button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="p-2 text-gray-500 hover:text-purple-600 transition-colors"
+          >
+            <Image className="w-5 h-5" />
+          </button>
+
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+          />
 
           {/* Message input */}
           <div className="flex-1 relative">
-            <input
-              type="text"
-              className="w-full bg-white border border-purple-100 rounded-2xl px-6 py-4 text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-purple-200 focus:border-purple-300 transition-all shadow-sm pr-12"
-              placeholder={
-                imageFile 
-                  ? "Add a caption..." 
-                  : "Type your message..."
-              }
+            <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type a message..."
+              className="w-full px-4 py-3 border border-gray-300 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              rows={1}
+              style={{
+                minHeight: "48px",
+                maxHeight: "120px",
+              }}
             />
-            
-            {/* Emoji button */}
-            <button
-              type="button"
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-purple-50 rounded-full transition-colors"
-            >
-              <Smile className="w-5 h-5 text-purple-400 hover:text-purple-600" />
-            </button>
           </div>
 
           {/* Send button */}
           <button
             type="submit"
-            disabled={(!imageFile && !message.trim()) || isUploading}
-            className={`p-4 rounded-2xl transition-all shadow-sm hover:shadow-md flex items-center justify-center min-w-[56px] ${
-              (!imageFile && !message.trim()) || isUploading
-                ? "bg-gray-200 cursor-not-allowed"
-                : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 hover:scale-105"
+            disabled={!message.trim() && !image}
+            className={`p-3 rounded-full transition-colors ${
+              message.trim() || image
+                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
           >
-            {isUploading ? (
-              <Loader2 className="w-5 h-5 text-white animate-spin" />
-            ) : (
-              <Send className="w-5 h-5 text-white" />
-            )}
+            <Send className="w-5 h-5" />
           </button>
-        </div>
-
-        {/* Quick actions */}
-        <div className="flex flex-col gap-3">
-          {/* Quick text messages */}
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => handleEmojiSend("Hello! 👋")}
-              disabled={isUploading}
-              className={`px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl text-blue-600 font-medium transition-all border border-blue-100 text-sm ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              Hello! 👋
-            </button>
-            <button
-              type="button"
-              onClick={() => handleEmojiSend("How are you?")}
-              disabled={isUploading}
-              className={`px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl text-blue-600 font-medium transition-all border border-blue-100 text-sm ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              How are you?
-            </button>
-            <button
-              type="button"
-              onClick={() => handleEmojiSend("How's it going? 😊")}
-              disabled={isUploading}
-              className={`px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl text-blue-600 font-medium transition-all border border-blue-100 text-sm ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              How's it going? 😊
-            </button>
-            <button
-              type="button"
-              onClick={() => handleEmojiSend("Good morning! ☀️")}
-              disabled={isUploading}
-              className={`px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl text-blue-600 font-medium transition-all border border-blue-100 text-sm ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              Good morning! ☀️
-            </button>
-            <button
-              type="button"
-              onClick={() => handleEmojiSend("What's up?")}
-              disabled={isUploading}
-              className={`px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl text-blue-600 font-medium transition-all border border-blue-100 text-sm ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              What's up?
-            </button>
-          </div>
-
-          {/* Emoji reactions */}
-          <div className="flex gap-2">
-            <span className="text-sm text-gray-500 font-medium flex items-center">Quick reactions:</span>
-            <button
-              type="button"
-              onClick={() => handleEmojiSend("👋")}
-              disabled={isUploading}
-              className={`px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl text-purple-600 font-medium transition-all border border-purple-100 ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              👋
-            </button>
-            <button
-              type="button"
-              onClick={() => handleEmojiSend("❤️")}
-              disabled={isUploading}
-              className={`px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl text-purple-600 font-medium transition-all border border-purple-100 ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              ❤️
-            </button>
-            <button
-              type="button"
-              onClick={() => handleEmojiSend("👍")}
-              disabled={isUploading}
-              className={`px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl text-purple-600 font-medium transition-all border border-purple-100 ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              👍
-            </button>
-            <button
-              type="button"
-              onClick={() => handleEmojiSend("😊")}
-              disabled={isUploading}
-              className={`px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl text-purple-600 font-medium transition-all border border-purple-100 ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              😊
-            </button>
-          </div>
         </div>
       </form>
     </div>
