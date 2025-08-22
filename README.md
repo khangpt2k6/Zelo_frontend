@@ -1,6 +1,7 @@
 # Real-Time Chat Application
 
 A modern chat application with secure authentication and real-time messaging capabilities.
+**Visit the website at:  http://54.80.194.225:3000/**
 
 <img width="1918" height="910" alt="image" src="https://github.com/user-attachments/assets/5a538abd-4d23-4bbd-8383-c1e310e00113" />
 
